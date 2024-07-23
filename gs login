@@ -1,0 +1,44 @@
+function doPost(e) {
+  const action = e.parameter.action;
+  if (action === 'login') {
+    return login(e.parameter);
+  } else if (action === 'signup') {
+    return signup(e.parameter);
+  }
+  return ContentService.createTextOutput(JSON.stringify({ error: 'Invalid action' })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function login(params) {
+  const email = params.email;
+  const password = params.password;
+  
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Users');
+  const data = sheet.getDataRange().getValues();
+  
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][1] === email && data[i][2] === password) {
+      return ContentService.createTextOutput(JSON.stringify({ success: true })).setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+  return ContentService.createTextOutput(JSON.stringify({ success: false })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function signup(params) {
+  const username = params.username;
+  const email = params.email;
+  const password = params.password;
+  
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Users');
+  const data = sheet.getDataRange().getValues();
+  
+  // Check if email already exists
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][1] === email) {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Email already exists' })).setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+  
+  // Add new user
+  sheet.appendRow([username, email, password]);
+  return ContentService.createTextOutput(JSON.stringify({ success: true })).setMimeType(ContentService.MimeType.JSON);
+}
